@@ -21,20 +21,23 @@ function! WgslIndent(lnum)
     return 0
   endif
 
-  let l:indent = indent(a:lnum)
-  let l:prev_line = getline(a:lnum - 1)
-  let l:line = getline(a:lnum)
 
-  " Ending with {, (, or [
-  if l:prev_line =~# '^.*\({\|(\|[\)\s*$'
-    if l:line =~# '^\s*$'
-      return l:indent + &shiftwidth
-    endif
+  let prev = a:lnum - 1
+  while prev > 1 && getline(prev) == ""
+    let prev -= 1
+  endwhile
+
+  let l:prev_line = getline(l:prev)
+  let l:indent = indent(prev)
+  let l:line = getline(a:lnum)
+  " Ending with }
+  if l:line =~# '^\s*\(}\|)\|]\)'
+    return l:indent - &shiftwidth
   endif
 
-  " Ending with }
-  if l:line =~# '^\s*}\s*$'
-    return l:indent - &shiftwidth
+  " Ending with {, (, or [
+  if l:prev_line =~# '^[^/]*\({\|(\|[\)\s*$'
+      return l:indent + &shiftwidth
   endif
 
   return l:indent
