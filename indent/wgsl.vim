@@ -5,7 +5,6 @@ let b:did_indent = 1
 
 setlocal autoindent
 setlocal nolisp
-setlocal nosmartindent
 setlocal indentexpr=WgslIndent(v:lnum)
 
 " Only define the function once.
@@ -30,15 +29,23 @@ function! WgslIndent(lnum)
   let l:prev_line = getline(l:prev)
   let l:indent = indent(prev)
   let l:line = getline(a:lnum)
+
+  " Ending with {, (, or [
+  let open = l:prev_line =~# '^[^/]*\({\|(\|[\)\s*$'
+  let close = l:line =~# '^\s*\(}\|)\|]\)'
+  if open && close
+    return l:indent
+  endif
+
+  if open
+    return l:indent + &shiftwidth
+  endif
+
   " Ending with }
-  if l:line =~# '^\s*\(}\|)\|]\)'
+  if close
     return l:indent - &shiftwidth
   endif
 
-  " Ending with {, (, or [
-  if l:prev_line =~# '^[^/]*\({\|(\|[\)\s*$'
-      return l:indent + &shiftwidth
-  endif
 
   return l:indent
 endfunc
